@@ -4,7 +4,7 @@
 
 - [x] ARCHITECTURE.md written and reviewed
 - [x] Project structure scaffolded
-- [ ] MIMII dataset downloaded and verified
+- [x] MIMII dataset downloaded and verified
 
 ---
 
@@ -30,18 +30,18 @@
 **Goal:** MIMII fan + slider data is local, visualized, understood.
 
 **Tasks:**
-- [ ] Write `scripts/download_data.py` that:
-  - [ ] Downloads fan (0dB) and slider (0dB) from Zenodo using `requests` or `urllib`
-  - [ ] Verifies file checksums
-  - [ ] Extracts to `data/raw/`
-  - [ ] Prints dataset statistics (n_normal, n_abnormal, duration per class)
-- [ ] Write `notebooks/01_eda.ipynb` that:
-  - [ ] Loads 5 normal + 5 abnormal samples for fan and slider
-  - [ ] Plots raw waveforms side by side (normal vs. abnormal)
-  - [ ] Plots log-Mel spectrograms side by side
-  - [ ] Plots class distribution bar chart
-  - [ ] Computes and prints: mean duration, sample rate, min/max amplitude per class
-  - [ ] Saves all plots to `notebooks/figures/`
+- [x] Write `scripts/download_data.py` that:
+  - [x] Downloads fan (0dB) and slider (0dB) from Zenodo using `requests` or `urllib`
+  - [x] Verifies file checksums
+  - [x] Extracts to `data/raw/`
+  - [x] Prints dataset statistics (n_normal, n_abnormal, duration per class)
+- [x] Write `notebooks/01_eda.ipynb` that:
+  - [x] Loads 5 normal + 5 abnormal samples for fan and slider
+  - [x] Plots raw waveforms side by side (normal vs. abnormal)
+  - [x] Plots log-Mel spectrograms side by side
+  - [x] Plots class distribution bar chart
+  - [x] Computes and prints: mean duration, sample rate, min/max amplitude per class
+  - [x] Saves all plots to `notebooks/figures/`
 
 **Acceptance Criterion:**  
 `python scripts/download_data.py` completes without error. Notebook runs top-to-bottom. You can visually distinguish normal vs. abnormal spectrograms in the plots.
