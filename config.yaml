@@ -8,6 +8,7 @@ data:
   machine_types: ["fan", "slider"]
   snr_levels: [-6, 0, 6]
   augment_factor: 3
+  max_generated_samples: 3000
   train_split: 0.70
   val_split: 0.15
   test_split: 0.15

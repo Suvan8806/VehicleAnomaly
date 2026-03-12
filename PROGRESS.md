@@ -53,16 +53,16 @@
 **Goal:** Automated pipeline that generates labeled, augmented dataset with metadata CSV.
 
 **Tasks:**
-- [ ] Implement `vehicleanomalynet/pipeline.py` with class `GroundTruthPipeline`
-- [ ] Write `scripts/run_pipeline.py` that instantiates and runs the pipeline
-- [ ] Pipeline must produce `data/processed/metadata.csv`
-- [ ] Pipeline must print a summary: total samples, class balance, split sizes
+- [x] Implement `vehicleanomalynet/pipeline.py` with class `GroundTruthPipeline`
+- [x] Write `scripts/run_pipeline.py` that instantiates and runs the pipeline
+- [x] Pipeline must produce `data/processed/metadata.csv`
+- [x] Pipeline must print a summary: total samples, class balance, split sizes
 
 **Requirements:**
-- [ ] SNR mixing must be mathematically correct (RMS-based, not amplitude-based)
-- [ ] Augmentations: time-stretch (±5%), gain jitter (±3dB), add mild Gaussian noise
-- [ ] Stratified train/val/test split: 70/15/15, split by `machine_id` (not random across machines — this tests generalization)
-- [ ] Save processed WAVs as 16kHz mono float32
+- [x] SNR mixing must be mathematically correct (RMS-based, not amplitude-based)
+- [x] Augmentations: time-stretch (±5%), gain jitter (±3dB), add mild Gaussian noise
+- [x] Stratified train/val/test split: 70/15/15, split by `machine_id` (not random across machines — this tests generalization)
+- [x] Save processed WAVs as 16kHz mono float32
 
 **Acceptance Criterion:**  
 `python scripts/run_pipeline.py` completes. `data/processed/metadata.csv` exists with correct columns. Class balance printed. At least 3,000 total samples generated.
@@ -74,13 +74,13 @@
 **Goal:** Audio → tensor pipeline, fast and deterministic.
 
 **Tasks:**
-- [ ] Implement `vehicleanomalynet/features.py`
-- [ ] Implement `vehicleanomalynet/dataset.py`
-- [ ] Write a unit test (inline, run with `python -m pytest` or just `python`) that:
-  - [ ] Loads 10 samples from dataset
-  - [ ] Prints feature shape, label distribution, min/max values
-  - [ ] Asserts feature tensor has no NaN or Inf values
-  - [ ] Asserts all features have identical shape
+- [x] Implement `vehicleanomalynet/features.py`
+- [x] Implement `vehicleanomalynet/dataset.py`
+- [x] Write a unit test (inline, run with `python -m pytest` or just `python`) that:
+  - [x] Loads 10 samples from dataset
+  - [x] Prints feature shape, label distribution, min/max values
+  - [x] Asserts feature tensor has no NaN or Inf values
+  - [x] Asserts all features have identical shape
 
 **Acceptance Criterion:**  
 Feature shapes are consistent. No NaN/Inf in features. Dataset `__getitem__` returns correct dtypes. Unit test passes.
