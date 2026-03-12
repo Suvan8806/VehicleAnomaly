@@ -2,8 +2,8 @@
 
 ## Phase 0: Planning
 
-- [ ] ARCHITECTURE.md written and reviewed
-- [ ] Project structure scaffolded
+- [x] ARCHITECTURE.md written and reviewed
+- [x] Project structure scaffolded
 - [ ] MIMII dataset downloaded and verified
 
 ---
@@ -13,12 +13,12 @@
 **Goal:** Architecture decided, repo scaffolded, no code written yet.
 
 **Tasks:**
-- [ ] Read full PRD
-- [ ] Write `ARCHITECTURE.md` (answer every question in the Planning Mode section)
-- [ ] Create full directory structure with empty `__init__.py` files
-- [ ] Write `requirements.txt` based on architecture decisions
-- [ ] Write `config.yaml` with all hyperparameters (fill in values after architecture decisions)
-- [ ] Create `PROGRESS.md` with all milestones as `[ ]`
+- [x] Read full PRD
+- [x] Write `ARCHITECTURE.md` (answer every question in the Planning Mode section)
+- [x] Create full directory structure with empty `__init__.py` files
+- [x] Write `requirements.txt` based on architecture decisions
+- [x] Write `config.yaml` with all hyperparameters (fill in values after architecture decisions)
+- [x] Create `PROGRESS.md` with all milestones as `[ ]`
 
 **Acceptance Criterion:**  
 `ARCHITECTURE.md` exists and answers every question. `PROGRESS.md` exists. `python -c "import vehicleanomalynet"` runs without error.

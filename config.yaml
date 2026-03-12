@@ -1,0 +1,64 @@
+# VehicleAnomalyNet Configuration
+# All hyperparameters live here — no magic numbers in code
+
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  metadata_path: "data/processed/metadata.csv"
+  machine_types: ["fan", "slider"]
+  snr_levels: [-6, 0, 6]
+  augment_factor: 3
+  train_split: 0.70
+  val_split: 0.15
+  test_split: 0.15
+  segment_length_s: 4.0
+  sample_rate: 16000
+
+features:
+  n_mels: 128
+  n_fft: 1024
+  hop_length: 512
+  f_min: 20.0
+  f_max: 8000.0
+  n_mfcc: 40
+  target_frames: 128
+  feature_type: "log_mel"  # "log_mel" | "mfcc" | "combined"
+
+model:
+  cnn_channels: [32, 64, 128]
+  gru_hidden: 256
+  gru_layers: 2
+  gru_bidirectional: true
+  dropout: 0.3
+  n_fault_classes: 7  # normal + 6 faults
+
+training:
+  batch_size: 64
+  epochs: 50
+  lr: 0.001
+  weight_decay: 0.0001
+  optimizer: "AdamW"
+  scheduler: "CosineAnnealingLR"
+  early_stopping_patience: 10
+  loss_weights:
+    anomaly: 1.0
+    fault: 0.5
+  device: "auto" # cuda > mps > cpu
+  checkpoint_dir: "checkpoints/"
+  best_model_path: "checkpoints/best_model.pt"
+
+evaluation:
+  anomaly_threshold: 0.5
+  results_dir: "results/"
+
+export:
+  onnx_path: "vehicleanomalynet.onnx"
+  benchmark_runs: 500
+  warmup_runs: 200
+  batch_sizes: [1, 8, 32]
+
+dashboard:
+  port: 8501
+  mlflow_tracking_uri: "mlruns/"
+  n_recent_runs: 5
+
