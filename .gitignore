@@ -4,4 +4,6 @@ __pycache__/
 *.onnx
 checkpoints/
 results/
-
+PROGRESS.md
+CURSOR_PRD.md
+ARCHITECTURE.md
