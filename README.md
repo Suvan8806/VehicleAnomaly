@@ -31,6 +31,37 @@ Outputs:
 - `data/processed/metadata.csv`
 - processed float32 WAV clips under `data/processed/{train,val,test}/`
 
+**Class balance:** In `config.yaml`, `data.max_label_ratio` (default `0.60`) caps the fraction of each split from one label so both normal and anomaly appear in train/val/test. Use `0.5` for 50/50 balance.
+
+**How to run (clean slate, pipeline, train, evaluate):**
+
+- Clean and run pipeline in one go:
+  ```powershell
+  .venv\Scripts\python.exe scripts\run_pipeline.py --clean --config config.yaml
+  ```
+- See what would be removed without deleting:
+  ```powershell
+  .venv\Scripts\python.exe scripts\clean_processed_data.py --dry-run
+  ```
+- Re-train (new data, so new checkpoint):
+  ```powershell
+  .venv\Scripts\python.exe scripts\run_training.py --config config.yaml --run-name baseline_v2
+  ```
+- Re-run evaluation:
+  ```powershell
+  .venv\Scripts\python.exe scripts\run_evaluation.py
+  ```
+
+## K-fold cross-validation
+
+For a more robust AUC estimate (mean ± std over folds):
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_cv.py --config config.yaml --folds 5
+```
+
+This trains and evaluates on 5 folds (stratified by machine_type) and prints mean test AUC-ROC ± std.
+
 ## Feature/Dataset smoke test (Milestone 3)
 
 ```powershell
@@ -40,7 +71,7 @@ Outputs:
 ## Train
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\run_training.py --config config.yaml --run-name baseline_v1
+.\.venv\Scripts\python.exe scripts\run_training.py --config config.yaml --run-name baseline_v2
 ```
 
 ## MLflow UI

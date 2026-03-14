@@ -5,11 +5,13 @@ metadata CSV to config path, and prints summary (total samples, class balance, s
 
 Usage (from project root):
     .venv\\Scripts\\python.exe scripts\\run_pipeline.py --config config.yaml
+    .venv\\Scripts\\python.exe scripts\\run_pipeline.py --clean --config config.yaml   # clean then run
 """
 
 from __future__ import annotations
 
 import argparse
+import shutil
 import sys
 from pathlib import Path
 
@@ -19,6 +21,18 @@ import yaml
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+
+
+def clean_processed_slate(processed_dir: Path, metadata_path: Path) -> None:
+    """Remove train/val/test dirs and metadata.csv so pipeline runs from a fresh slate."""
+    for sub in ("train", "val", "test"):
+        p = processed_dir / sub
+        if p.exists():
+            shutil.rmtree(p)
+            print(f"Removed: {p}")
+    if metadata_path.exists():
+        metadata_path.unlink()
+        print(f"Removed: {metadata_path}")
 
 
 def load_config(path: Path) -> dict:
@@ -42,6 +56,11 @@ def main() -> None:
         type=int,
         default=42,
         help="Random seed for train/val/test split assignment.",
+    )
+    parser.add_argument(
+        "--clean",
+        action="store_true",
+        help="Remove existing processed data (train/val/test + metadata) before running.",
     )
     args = parser.parse_args()
 
@@ -71,6 +90,10 @@ def main() -> None:
             f"Raw data directory not found: {raw_dir_resolved}. "
             "Run scripts/download_data.py first and extract MIMII fan + slider."
         )
+
+    if args.clean:
+        print("Cleaning processed data (clean slate)...")
+        clean_processed_slate(processed_dir_resolved, metadata_path_resolved)
 
     import random
     random.seed(args.seed)

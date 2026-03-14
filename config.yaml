@@ -12,6 +12,8 @@ data:
   train_split: 0.70
   val_split: 0.15
   test_split: 0.15
+  # Max fraction of a split from one label (0=normal, 1=anomaly). 0.5 = balanced; 0.75 = allow up to 75% one class.
+  max_label_ratio: 0.60
   segment_length_s: 4.0
   sample_rate: 16000
 

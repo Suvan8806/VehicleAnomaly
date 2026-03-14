@@ -185,6 +185,15 @@ class GroundTruthPipeline:
             "test": max_samples - int(max_samples * train_ratio) - int(max_samples * val_ratio),
         }
         split_counts = {"train": 0, "val": 0, "test": 0}
+        # Cap per-label share in each split so test/val have both normal and abnormal (AUC is defined).
+        max_label_ratio = float(data_cfg.get("max_label_ratio", 0.75))
+        split_label_caps: Dict[str, Dict[int, int]] = {
+            s: {0: int(split_targets[s] * max_label_ratio), 1: int(split_targets[s] * max_label_ratio)}
+            for s in ("train", "val", "test")
+        }
+        split_label_counts: Dict[str, Dict[int, int]] = {
+            s: {0: 0, 1: 0} for s in ("train", "val", "test")
+        }
 
         machine_keys_by_split: Dict[str, List[Tuple[str, str]]] = {"train": [], "val": [], "test": []}
         for key, sp in split_assign.items():
@@ -211,6 +220,8 @@ class GroundTruthPipeline:
                 ("abnormal", 1, "abnormal"),
                 ("normal", 0, "normal"),
             ):
+                if split_label_counts[split][anomaly_label] >= split_label_caps[split][anomaly_label]:
+                    continue
                 label_dir = machine_dir / label_name
                 if not label_dir.exists():
                     continue
@@ -221,6 +232,8 @@ class GroundTruthPipeline:
 
                 for wav_path in wav_files:
                     if split_counts[split] >= split_targets[split]:
+                        break
+                    if split_label_counts[split][anomaly_label] >= split_label_caps[split][anomaly_label]:
                         break
                     fault_type = self._infer_fault_type(
                         wav_path, machine_type, label_name, default_fault
@@ -284,6 +297,7 @@ class GroundTruthPipeline:
                                 )
                                 file_index += 1
                                 split_counts[split] += 1
+                                split_label_counts[split][anomaly_label] += 1
                                 if len(rows) >= max_samples:
                                     df = pd.DataFrame(rows)
                                     return df

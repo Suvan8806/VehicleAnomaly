@@ -106,11 +106,13 @@ class MIMIIDataset(Dataset):
             fault_type = str(row["fault_type"])
             fault_label = _fault_to_index(fault_type)
 
+        machine_type = str(row["machine_type"]) if "machine_type" in row else "unknown"
         return {
             "features": features,
             "anomaly_label": int(anomaly_label),
             "fault_label": int(fault_label),
             "filepath": filepath,
+            "machine_type": machine_type,
         }
 
 
