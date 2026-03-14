@@ -37,6 +37,30 @@ Outputs:
 .\.venv\Scripts\python.exe -m vehicleanomalynet.dataset data\processed\metadata.csv --config config.yaml
 ```
 
+## Train
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_training.py --config config.yaml --run-name baseline_v1
+```
+
+## MLflow UI
+
+From project root (so `mlruns/` is found):
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_mlflow_ui.py
+```
+
+Then open **http://127.0.0.1:5000** in your browser. To use another port:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_mlflow_ui.py --port 5001
+```
+
+**Seeing your training runs:** In MLflow 3.x the default view is GenAI (Traces). To see the **Runs** table (params, metrics), use the **workflow selector in the top navigation** and switch to **"Classical ML"** (or **"ML"**), then open **Experiments → Default**. You can also list runs from the terminal: `python scripts/list_mlflow_runs.py`.
+
+**Runs/Models empty?** The UI reads from `mlflow.db` (SQLite). If you trained before that was set up, your runs are in `mlruns/`. Stop the MLflow UI (Ctrl+C), then run once: `python scripts/migrate_mlruns_to_sqlite.py`, then start the UI again. New training runs are already logged to `mlflow.db`.
+
 ## EDA notebook
 
 Open and run `notebooks/01_eda.ipynb` (figures are saved to `notebooks/figures/`).

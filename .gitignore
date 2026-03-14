@@ -1,5 +1,6 @@
 data/
 mlruns/
+mlflow.db
 __pycache__/
 *.onnx
 checkpoints/
