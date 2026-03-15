@@ -129,6 +129,19 @@ def main() -> None:
         for mt in df["machine_type"].unique():
             n_mt = (df["machine_type"] == mt).sum()
             print(f"  {mt}: {n_mt}")
+    # Per-split breakdown (confirms test has both machine types and both labels after stratified split)
+    if "machine_type" in df.columns and "split" in df.columns:
+        print("  Per-split breakdown:")
+        for split_name in ("train", "val", "test"):
+            sub = df[df["split"] == split_name]
+            n_s = len(sub)
+            if n_s == 0:
+                continue
+            by_type = sub["machine_type"].value_counts()
+            by_label = sub["label"].value_counts()
+            type_str = "  ".join(f"{k}: {v}" for k, v in by_type.items())
+            label_str = "  ".join(f"{'normal' if k == 0 else 'anomalous'}: {v}" for k, v in by_label.items())
+            print(f"    {split_name}: {n_s}  ({type_str})  ({label_str})")
     print(f"Metadata saved: {metadata_path_resolved}")
     print()
 

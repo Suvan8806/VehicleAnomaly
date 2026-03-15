@@ -14,11 +14,21 @@ class DualTaskLoss(nn.Module):
     Ignores fault_head loss for normal samples (they have no fault type).
     """
 
-    def __init__(self, anomaly_weight: float, fault_weight: float) -> None:
+    def __init__(
+        self,
+        anomaly_weight: float,
+        fault_weight: float,
+        anomaly_pos_weight: float | None = None,
+    ) -> None:
         super().__init__()
         self.anomaly_weight = float(anomaly_weight)
         self.fault_weight = float(fault_weight)
-        self.bce = nn.BCEWithLogitsLoss()
+        if anomaly_pos_weight is not None:
+            self.bce = nn.BCEWithLogitsLoss(
+                pos_weight=torch.tensor([float(anomaly_pos_weight)], dtype=torch.float32)
+            )
+        else:
+            self.bce = nn.BCEWithLogitsLoss()
         self.ce = nn.CrossEntropyLoss(ignore_index=-1)
 
     def forward(

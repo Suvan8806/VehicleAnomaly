@@ -63,12 +63,33 @@ def evaluate(
     else:
         machine_types = np.array([str(m) for m in machine_types])
 
-    # Anomaly metrics
+    # Anomaly metrics (threshold-free + tuned thresholds)
     n_classes = len(np.unique(labels))
     if n_classes < 2:
         auc_roc = 0.0
+        best_thresh = 0.5
+        best_f1 = 0.0
+        youden_thresh = 0.5
+        youden_j = 0.0
     else:
+        fpr, tpr, roc_thresholds = roc_curve(labels, scores)
         auc_roc = float(roc_auc_score(labels, scores))
+
+        # Youden's J statistic: TPR - FPR, pick threshold that maximizes it.
+        j_values = tpr - fpr
+        j_idx = int(np.argmax(j_values))
+        youden_thresh = float(roc_thresholds[j_idx])
+        youden_j = float(j_values[j_idx])
+
+        # Threshold that maximizes F1 over the available ROC thresholds.
+        best_f1 = 0.0
+        best_thresh = 0.5
+        for thr in roc_thresholds:
+            preds_thr = (scores >= thr).astype(np.int64)
+            f1_val = f1_score(labels, preds_thr, average="binary", zero_division=0.0)
+            if f1_val > best_f1:
+                best_f1 = float(f1_val)
+                best_thresh = float(thr)
 
     pred_binary = (scores >= 0.5).astype(np.int64)
     precision = float(precision_score(labels, pred_binary, zero_division=0.0))
@@ -111,6 +132,10 @@ def evaluate(
         "f1_macro": f1_macro,
         "precision": precision,
         "recall": recall,
+        "best_f1_threshold": best_thresh,
+        "best_f1": best_f1,
+        "youden_j_threshold": youden_thresh,
+        "youden_j": youden_j,
         "per_machine_auc": per_machine_auc,
         "confusion_matrix": cm,
         "anomaly_scores": scores,

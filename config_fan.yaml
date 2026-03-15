@@ -1,18 +1,17 @@
-# VehicleAnomalyNet Configuration
-# All hyperparameters live here — no magic numbers in code
+# VehicleAnomalyNet — Fan-only (per-type training)
+# Use for: pipeline, train, eval for fan. Checkpoint: checkpoints/fan.pt
 
 data:
   raw_dir: "data/raw"
-  processed_dir: "data/processed"
-  metadata_path: "data/processed/metadata.csv"
-  machine_types: ["fan", "slider"]
+  processed_dir: "data/processed_fan"
+  metadata_path: "data/processed_fan/metadata.csv"
+  machine_types: ["fan"]
   snr_levels: [-6, 0, 6]
   augment_factor: 3
   max_generated_samples: 3000
   train_split: 0.70
   val_split: 0.15
   test_split: 0.15
-  # Max fraction of a split from one label (0=normal, 1=anomaly). 0.5 = balanced; 0.75 = allow up to 75% one class.
   max_label_ratio: 0.60
   segment_length_s: 4.0
   sample_rate: 16000
@@ -25,36 +24,35 @@ features:
   f_max: 8000.0
   n_mfcc: 40
   target_frames: 128
-  feature_type: "log_mel"  # "log_mel" | "mfcc" | "combined"
+  feature_type: "log_mel"
 
 model:
   cnn_channels: [32, 64, 128]
   gru_hidden: 256
   gru_layers: 2
   gru_bidirectional: true
-  dropout: 0.45  # increased from 0.3 to reduce overfitting (train loss was collapsing to 0)
-  n_fault_classes: 7  # normal + 6 faults
+  dropout: 0.45
+  n_fault_classes: 7  # normal + 6 faults (3 fan + 3 slider; head size unchanged for loading)
 
 training:
   batch_size: 64
   epochs: 50
   lr: 0.001
-  weight_decay: 0.0005  # increased from 0.0001 for stronger L2 regularization
+  weight_decay: 0.0005
   optimizer: "AdamW"
   scheduler: "CosineAnnealingLR"
   early_stopping_patience: 10
   loss_weights:
     anomaly: 1.0
     fault: 0.5
-  # BCE pos_weight for anomaly head: weight for positive (anomaly) class. <1 upweights normal. ~n_normal/n_anomaly for balance.
   anomaly_pos_weight: 0.67
-  device: "auto" # cuda > mps > cpu
+  device: "auto"
   checkpoint_dir: "checkpoints/"
-  best_model_path: "checkpoints/best_model.pt"
+  best_model_path: "checkpoints/fan.pt"
 
 evaluation:
   anomaly_threshold: 0.5
-  results_dir: "results/"
+  results_dir: "results_fan/"
 
 export:
   onnx_path: "vehicleanomalynet.onnx"
@@ -66,4 +64,3 @@ dashboard:
   port: 8501
   mlflow_tracking_uri: "mlruns/"
   n_recent_runs: 5
-

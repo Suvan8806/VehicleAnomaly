@@ -153,28 +153,53 @@ class GroundTruthPipeline:
             if ids:
                 machine_ids_by_type[mt] = ids
 
-        all_machine_ids: List[Tuple[str, str]] = []
-        for mt, ids in machine_ids_by_type.items():
-            for mid in ids:
-                all_machine_ids.append((mt, mid))
-
-        random.shuffle(all_machine_ids)
-        n = len(all_machine_ids)
-        n_train = max(1, int(n * train_ratio))
-        n_val = max(0, int(n * val_ratio))
-        n_test = n - n_train - n_val
-        if n_test < 0:
-            n_test = 0
-            n_val = n - n_train
-
+        # Stratify by machine_type so train/val/test each get both Fan and Slider (avoids test being 100% one type).
         split_assign: Dict[Tuple[str, str], str] = {}
-        for i, key in enumerate(all_machine_ids):
-            if i < n_train:
-                split_assign[key] = "train"
-            elif i < n_train + n_val:
-                split_assign[key] = "val"
+        for mt, ids in machine_ids_by_type.items():
+            type_ids = [(mt, mid) for mid in ids]
+            random.shuffle(type_ids)
+            n = len(type_ids)
+            # Guarantee, where possible, that each machine_type contributes
+            # at least one machine_id to validation and (for n >= 3) test.
+            if n == 1:
+                # With a single machine_id we cannot create val/test for this type.
+                split_assign[type_ids[0]] = "train"
+            elif n == 2:
+                # Smallest meaningful case: one train, one val.
+                split_assign[type_ids[0]] = "train"
+                split_assign[type_ids[1]] = "val"
             else:
-                split_assign[key] = "test"
+                # General case: enforce non-zero train and val, and leave at least
+                # one id for test whenever possible.
+                n_train = max(1, int(round(n * train_ratio)))
+                n_val = max(1, int(round(n * val_ratio)))
+                # Ensure we do not consume all ids with train+val.
+                if n_train + n_val > n - 1:
+                    overflow = n_train + n_val - (n - 1)
+                    # Prefer to reduce the larger bucket while keeping both >= 1.
+                    if n_train >= n_val and n_train - overflow >= 1:
+                        n_train -= overflow
+                    else:
+                        n_val = max(1, n_val - overflow)
+                n_test = n - n_train - n_val
+                if n_test == 0:
+                    # Still no test id left; steal one from train or val.
+                    if n_train > 1:
+                        n_train -= 1
+                        n_test = 1
+                    else:
+                        n_val -= 1
+                        n_test = 1
+
+                assert n_train >= 1 and n_val >= 1 and n_test >= 1
+
+                for i, key in enumerate(type_ids):
+                    if i < n_train:
+                        split_assign[key] = "train"
+                    elif i < n_train + n_val:
+                        split_assign[key] = "val"
+                    else:
+                        split_assign[key] = "test"
 
         rows: List[Dict[str, Any]] = []
         file_index = 0
@@ -309,6 +334,35 @@ class GroundTruthPipeline:
                         break
 
         df = pd.DataFrame(rows)
+
+        # Sanity checks: fail fast on unhealthy splits so downstream
+        # training/evaluation never silently proceed with invalid data.
+        if df.empty:
+            raise ValueError(
+                "GroundTruthPipeline.generate produced an empty metadata DataFrame. "
+                "Check raw data availability, machine_types, and max_generated_samples."
+            )
+
+        for split_name in ("train", "val", "test"):
+            n_split = int((df["split"] == split_name).sum())
+            if n_split == 0:
+                raise ValueError(
+                    f"No samples assigned to split '{split_name}'. "
+                    "Adjust train/val/test ratios, max_generated_samples, or available machine_ids."
+                )
+
+        # Validation and test splits should contain both normal and anomalous
+        # samples wherever the underlying data permits; otherwise AUC/F1 are
+        # poorly defined. Enforce this as a guardrail.
+        for split_name in ("val", "test"):
+            mask = df["split"] == split_name
+            labels_in_split = df.loc[mask, "label"].unique().tolist()
+            if len(labels_in_split) < 2:
+                raise ValueError(
+                    f"Split '{split_name}' contains only a single class (labels={labels_in_split}). "
+                    "Consider relaxing max_label_ratio or increasing max_generated_samples."
+                )
+
         return df
 
     def _infer_fault_type(

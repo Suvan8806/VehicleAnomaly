@@ -51,9 +51,13 @@ class Trainer:
         self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
             self.optimizer, T_max=self.epochs
         )
+        anomaly_pos_weight = train_cfg.get("anomaly_pos_weight")
+        if anomaly_pos_weight is not None:
+            anomaly_pos_weight = float(anomaly_pos_weight)
         self.criterion = DualTaskLoss(
             anomaly_weight=float(train_cfg["loss_weights"]["anomaly"]),
             fault_weight=float(train_cfg["loss_weights"]["fault"]),
+            anomaly_pos_weight=anomaly_pos_weight,
         )
         self.patience = int(train_cfg.get("early_stopping_patience", 10))
         self.best_model_path = Path(train_cfg.get("best_model_path", "checkpoints/best_model.pt"))
@@ -102,6 +106,11 @@ class Trainer:
         """Returns {"loss": float, "auc_roc": float, "f1": float}."""
         self.model.eval()
         loader = self.dataloaders["val"]
+        if len(loader) == 0:
+            raise RuntimeError(
+                "Validation DataLoader is empty. "
+                "Ensure that GroundTruthPipeline generated a non-empty 'val' split."
+            )
         total_loss = 0.0
         n_batches = 0
         all_anomaly_scores: list = []
