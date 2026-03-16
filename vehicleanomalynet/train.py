@@ -63,6 +63,12 @@ class Trainer:
         self.best_model_path = Path(train_cfg.get("best_model_path", "checkpoints/best_model.pt"))
         self.best_model_path.parent.mkdir(parents=True, exist_ok=True)
 
+        # Optional: stop when val metric reaches target (so fan/slider can run different epoch counts)
+        _auc = train_cfg.get("target_val_auc_roc")
+        self.target_val_auc_roc = float(_auc) if _auc is not None else None
+        _loss = train_cfg.get("target_val_loss")
+        self.target_val_loss = float(_loss) if _loss is not None else None
+
         self.best_val_auc = -1.0
         self.epochs_without_improvement = 0
 
@@ -207,6 +213,14 @@ class Trainer:
                     if self.epochs_without_improvement >= self.patience:
                         print(f"Early stopping at epoch {epoch}")
                         break
+
+                # Stop when target val AUC or val loss is reached (epochs can differ per type)
+                if self.target_val_auc_roc is not None and auc >= self.target_val_auc_roc:
+                    print(f"Target val AUC-ROC {self.target_val_auc_roc} reached at epoch {epoch}")
+                    break
+                if self.target_val_loss is not None and val_metrics["loss"] <= self.target_val_loss:
+                    print(f"Target val loss {self.target_val_loss} reached at epoch {epoch}")
+                    break
 
             best = {
                 "best_val_auc_roc": self.best_val_auc,

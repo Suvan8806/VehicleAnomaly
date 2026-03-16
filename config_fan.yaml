@@ -12,7 +12,7 @@ data:
   train_split: 0.70
   val_split: 0.15
   test_split: 0.15
-  max_label_ratio: 0.60
+  max_label_ratio: 0.50
   segment_length_s: 4.0
   sample_rate: 16000
 
@@ -27,11 +27,11 @@ features:
   feature_type: "log_mel"
 
 model:
-  cnn_channels: [32, 64, 128]
-  gru_hidden: 256
+  cnn_channels: [24, 48, 96]
+  gru_hidden: 192
   gru_layers: 2
   gru_bidirectional: true
-  dropout: 0.45
+  dropout: 0.55
   n_fault_classes: 7  # normal + 6 faults (3 fan + 3 slider; head size unchanged for loading)
 
 training:
@@ -42,10 +42,13 @@ training:
   optimizer: "AdamW"
   scheduler: "CosineAnnealingLR"
   early_stopping_patience: 10
+  # Stop when val metric reaches target (training can run different epoch counts per type)
+  target_val_auc_roc: null   # disable AUC target for now; rely on early stopping
+  # target_val_loss: 0.5     # optional: stop when val loss <= this
   loss_weights:
     anomaly: 1.0
     fault: 0.5
-  anomaly_pos_weight: 0.67
+  anomaly_pos_weight: 0.8
   device: "auto"
   checkpoint_dir: "checkpoints/"
   best_model_path: "checkpoints/fan.pt"

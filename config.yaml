@@ -43,6 +43,9 @@ training:
   optimizer: "AdamW"
   scheduler: "CosineAnnealingLR"
   early_stopping_patience: 10
+  # Optional: stop when val metric reaches target (epochs then differ per run)
+  # target_val_auc_roc: 0.75
+  # target_val_loss: 0.5
   loss_weights:
     anomaly: 1.0
     fault: 0.5
